@@ -1,0 +1,129 @@
+# BilldDesk 一键 Docker 部署（宝塔 Windows Docker 插件 / Docker Desktop 通用）
+# 用法见 DOCKER_DEPLOY.md
+#
+# 服务清单：
+#   - mysql    : 8.0，数据持久化到 ./data/mysql
+#   - redis    : 7-alpine，数据持久化到 ./data/redis
+#   - server   : Node 18 跑 billd-desk-server（精简版）
+#   - nginx    : 反向代理 + WSS upgrade + SSL（证书放 ./docker/nginx/cert/）
+#
+# 资源占用（2H4G 实测）：
+#   - mysql   ~400MB
+#   - redis   ~30MB
+#   - server  ~250MB
+#   - nginx   ~20MB
+#   总计 ~700MB，留 3GB+ 给系统和缓冲
+
+name: billd-desk
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: billd-desk-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-billd_desk_root_change_me}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-billd_desk}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --max-connections=200
+      - --innodb-buffer-pool-size=256M
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./docker/mysql/conf/my.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    # 默认 mysql 端口不对外暴露；如需用 Navicat 临时调试，把下面注释打开
+    # ports:
+    #   - "127.0.0.1:3306:3306"
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-uroot', '-p${MYSQL_ROOT_PASSWORD:-billd_desk_root_change_me}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - billd-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: billd-desk-redis
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --appendonly
+      - 'yes'
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - allkeys-lru
+      # 如需密码：把下面两行取消注释，同时 secret.ts 里也填上
+      # - --requirepass
+      # - ${REDIS_PASSWORD:-billd_desk_redis_change_me}
+    volumes:
+      - ./data/redis:/data
+    # 默认不对外暴露
+    # ports:
+    #   - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - billd-net
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: billd-desk-server:latest
+    container_name: billd-desk-server
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NODE_APP_RELEASE_PROJECT_NAME: billd-desk-server
+      NODE_APP_RELEASE_PROJECT_ENV: prod
+      NODE_APP_RELEASE_PROJECT_PORT: 4200
+      TZ: Asia/Shanghai
+    volumes:
+      # 把宿主机的 secret.ts 挂进去（容器编译时已经把 secret.example.ts 内联进 dist；
+      # 这里用 host 的 secret.ts 覆盖 dist 里的对应文件，方便改完不用 rebuild）
+      - ./src/secret/secret.ts:/app/dist/secret/secret.js:ro
+      # 上传 / 录制文件持久化
+      - ./data/upload:/app/upload
+      - ./data/webm:/app/webm
+      - ./data/public:/app/public
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # server 端口不对外，只让 nginx 转
+    expose:
+      - '4200'
+    networks:
+      - billd-net
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: billd-desk-nginx
+    restart: unless-stopped
+    ports:
+      - '${HTTP_PORT:-80}:80'
+      - '${HTTPS_PORT:-443}:443'
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./docker/nginx/cert:/etc/nginx/cert:ro
+      - ./data/nginx/logs:/var/log/nginx
+    depends_on:
+      - server
+    networks:
+      - billd-net
+
+networks:
+  billd-net:
+    driver: bridge
+    name: billd-desk-net

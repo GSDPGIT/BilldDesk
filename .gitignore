@@ -27,9 +27,17 @@ server/logs/
 # 敏感配置：必须用 secret.example.ts 拷贝改名
 server/src/secret/secret.ts
 server/src/secret/secret.local.ts
+server/src/secret/secret-remote-dev.ts
 server/.env
 server/.env.local
 server/.env.*.local
+
+# ===== Docker 数据卷（容器持久化数据，不入仓） =====
+server/data/
+# Docker 用户上传的 SSL 证书（敏感）
+server/docker/nginx/cert/*.pem
+server/docker/nginx/cert/*.key
+!server/docker/nginx/cert/README.md
 
 # ===== 静默部署运行时数据（用户机器上的） =====
 **/silent/*.hb

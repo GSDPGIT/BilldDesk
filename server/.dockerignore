@@ -1,0 +1,43 @@
+.git
+.gitignore
+.gitattributes
+.github
+node_modules
+dist
+.cache
+.eslintcache
+.husky
+.vscode
+.idea
+
+# 上传 / 输出目录（容器内重建）
+upload
+webm
+public/upload
+
+# 文档
+README.md
+DOCKER_DEPLOY.md
+doc
+
+# 测试
+test
+
+# 编辑器
+*.swp
+.DS_Store
+Thumbs.db
+
+# 不要把 host 的 secret.ts 打进镜像（运行时挂载）
+src/secret/secret.ts
+src/secret/secret-remote-dev.ts
+src/secret/secret.local.ts
+
+# Docker 自己的产物
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+.env
+.env.*
+docker/nginx
