@@ -71,24 +71,14 @@ pnpm run build:win   # 出 Windows 安装包到 client/electron-release/
 
 ### 服务端部署（在你的 Windows 2H4G 上）
 
-```bash
-cd server
-pnpm i
+**两种选项**：
 
-# 配置 secret
-cp src/secret/secret.example.ts src/secret/secret.ts
-# 编辑 secret.ts 把 TODO_ 项目改成你的 MySQL/Redis 密码 + JWT_SECRET
+| 方案 | 适合 | 详细文档 |
+|---|---|---|
+| **A. 原生部署（推荐 2H4G）** | 宝塔 Windows + PM2 + native MySQL/Redis/Nginx；占用最小 ~500MB | [server/NATIVE_DEPLOY.md](server/NATIVE_DEPLOY.md) |
+| B. Docker 部署 | Linux 服务器 或 Windows + Docker Desktop（需要 WSL2，2H4G 紧） | [server/DOCKER_DEPLOY.md](server/DOCKER_DEPLOY.md) |
 
-# 初始化数据库（首次）
-pnpm run mysql:prod
-
-# 启动（生产环境）
-pnpm run build
-pm2 start dist/index.js --name billd-desk-server
-pm2 save
-```
-
-详细 Windows + 宝塔面板部署步骤：见 `server/doc/` 下文档。
+宝塔 Windows 面板**没有 Docker 插件**，所以 Windows 服务器选 A。
 
 ### 客户端连你自己的服务端
 
