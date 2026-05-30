@@ -1,0 +1,40 @@
+# ===== 通用 =====
+.DS_Store
+Thumbs.db
+*.log
+*.local
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# ===== Node =====
+node_modules/
+dist/
+.cache/
+.turbo/
+.eslintcache
+*.tgz
+
+# ===== Electron 客户端 =====
+client/electron-dist/
+client/electron-release/
+client/dist/
+client/release/
+
+# ===== 服务端 =====
+server/dist/
+server/logs/
+# 敏感配置：必须用 secret.example.ts 拷贝改名
+server/src/secret/secret.ts
+server/src/secret/secret.local.ts
+server/.env
+server/.env.local
+server/.env.*.local
+
+# ===== 静默部署运行时数据（用户机器上的） =====
+**/silent/*.hb
+**/silent/*.pid
+**/silent/*.lock
+**/silent/*.log
+**/silent/exit.token
+**/silent/lock-on-disconnect.json
