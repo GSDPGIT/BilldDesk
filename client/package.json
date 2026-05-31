@@ -18,6 +18,8 @@
     "build:mw": "standard-version && vite build && electron-builder --mac --win",
     "build:prod": "cross-env VITE_APP_RELEASE_PROJECT_ISWEB=true vite build",
     "build:win": "standard-version && vite build && electron-builder --win",
+    "build:master": "cross-env BILLD_VARIANT=master vite build && electron-builder --win --x64 --config.npmRebuild=false --config electron-builder.master.json5",
+    "build:agent": "cross-env BILLD_VARIANT=agent vite build && electron-builder --win --x64 --config.npmRebuild=false --config electron-builder.agent.json5",
     "copy": "ts-node ./deploy/handleGiteeJenkins.mjs",
     "cz": "cz",
     "deploy:beta": "node ./deploy/index.cjs --beta",

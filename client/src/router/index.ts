@@ -53,6 +53,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         path: '/setting',
         component: () => import('@/views/setting/index.vue'),
       },
+      {
+        name: 'myAgents',
+        path: '/myAgents',
+        component: () => import('@/views/myAgents/index.vue'),
+      },
     ],
   },
   {

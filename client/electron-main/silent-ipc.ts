@@ -1,6 +1,7 @@
 // 静默模式新增的 IPC 接线：锁屏、关显示器、隐私模式、退出远控时锁屏、强制退出
 // 渲染进程通过 IPC_EVENT.silent_xxx 调过来
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
 import { app, ipcMain } from 'electron';
@@ -94,6 +95,34 @@ export async function handleRemoteDisconnect(): Promise<void> {
 export function registerSilentIpc(): void {
   // 启动时从磁盘恢复开关
   loadLockOnDisconnect();
+
+  // Agent 端启动时拉系统信息，用来 register 上报
+  ipcMain.handle('agent_get_system_info', () => {
+    try {
+      const nics = os.networkInterfaces();
+      let localIp = '';
+      for (const name of Object.keys(nics)) {
+        for (const ni of nics[name] || []) {
+          if (!ni.internal && ni.family === 'IPv4') {
+            localIp = ni.address;
+            break;
+          }
+        }
+        if (localIp) break;
+      }
+      return {
+        code: 0,
+        data: {
+          hostname: os.hostname(),
+          platform: process.platform,
+          os_version: `${os.type()} ${os.release()}`,
+          local_ip: localIp,
+        },
+      };
+    } catch (e) {
+      return { code: 1, msg: String(e) };
+    }
+  });
 
   // 渲染端每 5s 上报一次。这里把 payload + 收到时间写到 renderer.hb
   // watchdog 读这个文件判断"主进程是否真活着 / WebRTC 是否还连着"

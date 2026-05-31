@@ -1,0 +1,46 @@
+// BilldDesk Agent 被控端 NSIS 打包配置
+// 通过 pnpm run build:agent 调用
+//
+// 关键差异 vs master:
+//   - productName 不同 → userData 目录隔离（同一台机能装多份不冲突）
+//   - oneClick = true → 安装无界面，无快捷方式
+//   - perMachine = true → 装到 ProgramFiles（要管理员）
+//   - createDesktopShortcut = false → 不在桌面创建快捷方式
+//   - 安装后自动启动（runAfterFinish）
+//   - 卸载也安静
+{
+  $schema: 'https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json',
+  appId: 'com.billddesk.agent',
+  productName: 'BilldDesk-Agent',
+  directories: {
+    output: 'electron-release/agent',
+  },
+  files: ['dist', 'electron-dist'],
+  extraResources: [
+    {
+      from: 'scripts',
+      to: 'scripts',
+      filter: ['watchdog.cjs', 'install-silent.ps1', 'uninstall-silent.ps1'],
+    },
+  ],
+  win: {
+    artifactName: 'BilldDesk-Agent-${version}-x64-setup.${ext}',
+    requestedExecutionLevel: 'requireAdministrator',
+    target: [{ target: 'nsis', arch: ['x64'] }],
+    icon: 'build/icons/icon.ico',
+  },
+  nsis: {
+    // 一键安装：无 GUI 向导
+    oneClick: true,
+    // 装机器层级（C:\Program Files\BilldDesk-Agent）
+    perMachine: true,
+    allowToChangeInstallationDirectory: false,
+    // 不创建桌面 / 开始菜单快捷方式
+    createDesktopShortcut: false,
+    createStartMenuShortcut: false,
+    // 卸载时不删 userData（agent device_id / config 保留）
+    deleteAppDataOnUninstall: false,
+    // 安装完成立即运行（agent 启动后自注册）
+    runAfterFinish: true,
+  },
+}

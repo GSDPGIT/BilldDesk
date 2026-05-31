@@ -14,6 +14,12 @@ import { app, BrowserWindow } from 'electron';
 
 const SILENT_FLAG = '--silent';
 
+// vite define 注入；agent 编译产物里固定为 'agent'，否则 'master' / undefined
+declare const __BILLD_VARIANT__: string;
+const IS_AGENT_BUILD =
+  typeof __BILLD_VARIANT__ !== 'undefined' &&
+  __BILLD_VARIANT__ === 'agent';
+
 // 所有路径都做成 lazy getter：app.getPath('userData') 在 app.ready 前调有风险
 // （Electron 文档明确不保证 ready 之前可用）。模块顶部 import 时就调一定踩雷。
 function heartbeatDir(): string {
@@ -47,7 +53,13 @@ let heartbeatTimer: NodeJS.Timeout | null = null;
 let watchdogCheckTimer: NodeJS.Timeout | null = null;
 
 export function isSilent(): boolean {
+  // Agent build：永远静默
+  if (IS_AGENT_BUILD) return true;
   return process.argv.includes(SILENT_FLAG);
+}
+
+export function isAgentBuild(): boolean {
+  return IS_AGENT_BUILD;
 }
 
 // 调用方在创建 BrowserWindow 之前合并这些选项
@@ -70,17 +82,19 @@ export function ensureAutoStart(): void {
     console.log('[silent] dev mode, skip auto-start registration');
     return;
   }
-  if (process.platform === 'win32') {
-    // Windows 不在此处注册，避免和 install-silent.ps1 的 HKCU Run 冲突
-    return;
-  }
   try {
     const exe = process.execPath;
+    // Agent build：Windows 也注册 HKCU Run（无需 install-silent.ps1 配合）
+    // 普通 master/silent build：Windows 跳过避免和 install-silent.ps1 冲突
+    if (process.platform === 'win32' && !IS_AGENT_BUILD) {
+      return;
+    }
     app.setLoginItemSettings({
       openAtLogin: true,
       openAsHidden: true,
       path: exe,
-      args: [SILENT_FLAG],
+      // agent build 不带 --silent 也会因 IS_AGENT_BUILD 强制静默
+      args: IS_AGENT_BUILD ? [] : [SILENT_FLAG],
     });
     console.log('[silent] auto-start registered:', exe);
   } catch (e) {

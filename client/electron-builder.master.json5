@@ -1,0 +1,31 @@
+// BilldDesk Master 主控端 NSIS 打包配置
+// 通过 pnpm run build:master 调用
+{
+  $schema: 'https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json',
+  appId: 'com.billddesk.master',
+  productName: 'BilldDesk-Master',
+  directories: {
+    output: 'electron-release/master',
+  },
+  files: ['dist', 'electron-dist'],
+  extraResources: [
+    {
+      from: 'scripts',
+      to: 'scripts',
+      filter: ['watchdog.cjs', 'install-silent.ps1', 'uninstall-silent.ps1'],
+    },
+  ],
+  win: {
+    artifactName: 'BilldDesk-Master-${version}-x64-setup.${ext}',
+    requestedExecutionLevel: 'highestAvailable',
+    target: [{ target: 'nsis', arch: ['x64'] }],
+    icon: 'build/icons/icon.ico',
+  },
+  nsis: {
+    oneClick: false,
+    perMachine: false,
+    allowToChangeInstallationDirectory: true,
+    deleteAppDataOnUninstall: false,
+    shortcutName: 'BilldDesk Master',
+  },
+}

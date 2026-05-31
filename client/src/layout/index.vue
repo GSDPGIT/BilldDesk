@@ -50,6 +50,13 @@
         </div>
         <div
           class="item"
+          :class="{ active: route.name === 'myAgents' }"
+          @click="router.push({ path: '/myAgents' })"
+        >
+          我的被控端
+        </div>
+        <div
+          class="item"
           :class="{ active: route.name === routerName.setting }"
           @click="router.push({ name: routerName.setting })"
         >
