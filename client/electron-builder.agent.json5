@@ -25,7 +25,9 @@
   ],
   win: {
     artifactName: 'BilldDesk-Agent-${version}-x64-setup.${ext}',
-    requestedExecutionLevel: 'requireAdministrator',
+    // app exe 用 asInvoker 避免每次启动 UAC（"静默"被控端必须无弹窗）
+    // 安装阶段需要管理员权限走 perMachine=true（NSIS 安装包自己会触发一次 UAC）
+    requestedExecutionLevel: 'asInvoker',
     target: [{ target: 'nsis', arch: ['x64'] }],
     icon: 'build/icons/icon.ico',
   },

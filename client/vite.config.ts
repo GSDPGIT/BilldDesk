@@ -30,6 +30,16 @@ const BILLD_AGENT_VERSION = process.env.BILLD_AGENT_VERSION || pkg.version;
 console.log('[vite] BILLD_VARIANT =', BILLD_VARIANT);
 console.log('[vite] BILLD_WSS_URL =', BILLD_WSS_URL);
 
+// 把所有 build-time 字符串常量抽出来，方便同时注入到 renderer / main / preload 三处 vite 编译
+const BUILD_DEFINES = {
+  __BILLD_VARIANT__: JSON.stringify(BILLD_VARIANT),
+  __BILLD_WSS_URL__: JSON.stringify(BILLD_WSS_URL),
+  __BILLD_AXIOS_URL__: JSON.stringify(BILLD_AXIOS_URL),
+  __BILLD_COTURN_URL__: JSON.stringify(BILLD_COTURN_URL),
+  __BILLD_AGENT_API_KEY__: JSON.stringify(BILLD_AGENT_API_KEY),
+  __BILLD_AGENT_VERSION__: JSON.stringify(BILLD_AGENT_VERSION),
+};
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
@@ -42,11 +52,9 @@ export default defineConfig(({ mode }) => {
         return './';
       }
     } else {
-      if (isProduction) {
-        return 'dist';
-      } else {
-        return './';
-      }
+      // Electron 打包后 HTML 加载自 app.asar/dist/index.html，
+      // 资源必须用 ./ 相对路径，原来 'dist' 会变成 dist/dist/xxx → 404 白屏
+      return './';
     }
   };
 
@@ -86,10 +94,12 @@ export default defineConfig(({ mode }) => {
         main: {
           entry: 'electron-main/index.ts', // 主进程文件
           vite: {
+            // 关键：把 __BILLD_*__ 也注入 main 进程，否则 silent-mode.ts 里 IS_AGENT_BUILD 永远 false
+            define: BUILD_DEFINES,
             build: {
               outDir: 'electron-dist',
               lib: {
-                entry: 'electron-main/index.ts', // 主进程文件
+                entry: 'electron-main/index.ts',
                 formats: ['cjs'],
                 fileName: () => '[name].cjs',
               },
@@ -99,6 +109,8 @@ export default defineConfig(({ mode }) => {
         preload: {
           input: 'electron-main/preload.ts',
           vite: {
+            // preload 也注入（备用，preload 现在不用 build-config 但保险）
+            define: BUILD_DEFINES,
             build: {
               outDir: 'electron-dist',
             },
@@ -144,13 +156,8 @@ export default defineConfig(({ mode }) => {
         ),
         VUE_APP_RELEASE_PROJECT_VERSION: JSON.stringify(pkg.version),
       },
-      // Build-time 注入 build-config.ts 用的常量
-      __BILLD_VARIANT__: JSON.stringify(BILLD_VARIANT),
-      __BILLD_WSS_URL__: JSON.stringify(BILLD_WSS_URL),
-      __BILLD_AXIOS_URL__: JSON.stringify(BILLD_AXIOS_URL),
-      __BILLD_COTURN_URL__: JSON.stringify(BILLD_COTURN_URL),
-      __BILLD_AGENT_API_KEY__: JSON.stringify(BILLD_AGENT_API_KEY),
-      __BILLD_AGENT_VERSION__: JSON.stringify(BILLD_AGENT_VERSION),
+      // Build-time 注入 build-config.ts 用的常量（renderer）
+      ...BUILD_DEFINES,
     },
 
     server: {

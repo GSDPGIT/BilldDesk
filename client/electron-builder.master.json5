@@ -17,7 +17,8 @@
   ],
   win: {
     artifactName: 'BilldDesk-Master-${version}-x64-setup.${ext}',
-    requestedExecutionLevel: 'highestAvailable',
+    // 普通 GUI 应用，无需管理员权限
+    requestedExecutionLevel: 'asInvoker',
     target: [{ target: 'nsis', arch: ['x64'] }],
     icon: 'build/icons/icon.ico',
   },
