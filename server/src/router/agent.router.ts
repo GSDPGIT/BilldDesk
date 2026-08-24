@@ -1,24 +1,25 @@
-// Agent 路由
-// 所有接口都需要 X-Agent-Key 头鉴权
+// Agent 路由（分权）
+//   agent 端接口：低权 X-Agent-Key
+//   主控端接口：高权 X-Agent-Admin-Key
 import Router from 'koa-router';
 
 import agentController from '@/controller/agent.controller';
-import { agentAuthMiddleware } from '@/middleware/agentAuth.middleware';
+import {
+  agentAuthMiddleware,
+  agentAdminMiddleware,
+} from '@/middleware/agentAuth.middleware';
 
 const agentRouter = new Router({ prefix: '/agent' });
 
-// 全路由前置鉴权
-agentRouter.use(agentAuthMiddleware);
+// ---- agent 端（低权）----
+agentRouter.post('/register', agentAuthMiddleware, agentController.register);
+agentRouter.post('/heartbeat', agentAuthMiddleware, agentController.heartbeat);
+agentRouter.get('/config_for_me', agentAuthMiddleware, agentController.configForMe);
 
-// agent 端调
-agentRouter.post('/register', agentController.register);
-agentRouter.post('/heartbeat', agentController.heartbeat);
-agentRouter.get('/config_for_me', agentController.configForMe);
-
-// 主控端调
-agentRouter.get('/list', agentController.list);
-agentRouter.get('/:id(\\d+)', agentController.detail);
-agentRouter.post('/:id(\\d+)/config', agentController.updateConfig);
-agentRouter.delete('/:id(\\d+)', agentController.delete);
+// ---- 主控端（高权，agent 产物里没有这把 key）----
+agentRouter.get('/list', agentAdminMiddleware, agentController.list);
+agentRouter.get('/:id(\\d+)', agentAdminMiddleware, agentController.detail);
+agentRouter.post('/:id(\\d+)/config', agentAdminMiddleware, agentController.updateConfig);
+agentRouter.delete('/:id(\\d+)', agentAdminMiddleware, agentController.delete);
 
 export default agentRouter;

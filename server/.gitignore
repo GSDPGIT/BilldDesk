@@ -2,6 +2,7 @@ node_modules
 .DS_Store
 /dist
 /src/secret/secret.ts
+/src/secret/agent-key.ts
 /src/secret/secret-remote-dev.ts
 /public/**/*
 /upload/**/*
