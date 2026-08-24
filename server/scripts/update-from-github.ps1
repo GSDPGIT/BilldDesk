@@ -140,7 +140,7 @@ if ($port) {
 Log ""
 Log "===== 完成 ====="
 Log "测试 agent API:"
-Log "  Invoke-WebRequest -Uri https://api.xx10086.com:8443/agent/list -Headers @{'X-Agent-Key'='c6aed1f8702016f298c7bb3dda70269379a663e97f1d0c8e3e15a2825a6fa1a5'} -SkipCertificateCheck | Select-Object -ExpandProperty Content"
+Log "  Invoke-WebRequest -Uri https://api.你的域名.com/agent/list -Headers @{'X-Agent-Admin-Key'='<你的-BILLD_AGENT_ADMIN_KEY>'} -SkipCertificateCheck | Select-Object -ExpandProperty Content"
 Log ""
 Log "日志: $log"
 

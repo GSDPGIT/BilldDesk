@@ -26,6 +26,7 @@ server/dist/
 server/logs/
 # 敏感配置：必须用 secret.example.ts 拷贝改名
 server/src/secret/secret.ts
+server/src/secret/agent-key.ts
 server/src/secret/secret.local.ts
 server/src/secret/secret-remote-dev.ts
 server/.env

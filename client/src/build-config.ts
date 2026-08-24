@@ -7,6 +7,8 @@ declare const __BILLD_VARIANT__: 'agent' | 'master';
 declare const __BILLD_WSS_URL__: string;
 declare const __BILLD_AXIOS_URL__: string;
 declare const __BILLD_COTURN_URL__: string;
+declare const __BILLD_COTURN_USERNAME__: string;
+declare const __BILLD_COTURN_CREDENTIAL__: string;
 declare const __BILLD_AGENT_API_KEY__: string;
 declare const __BILLD_AGENT_VERSION__: string;
 
@@ -18,6 +20,8 @@ export const IS_MASTER_BUILD = BUILD_VARIANT === 'master';
 export const HARDCODED_WSS_URL = __BILLD_WSS_URL__;
 export const HARDCODED_AXIOS_URL = __BILLD_AXIOS_URL__;
 export const HARDCODED_COTURN_URL = __BILLD_COTURN_URL__;
+export const COTURN_USERNAME = __BILLD_COTURN_USERNAME__;
+export const COTURN_CREDENTIAL = __BILLD_COTURN_CREDENTIAL__;
 
 // Agent 鉴权密钥
 export const AGENT_API_KEY = __BILLD_AGENT_API_KEY__;

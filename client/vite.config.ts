@@ -19,13 +19,16 @@ const isWeb = process.env['VITE_APP_RELEASE_PROJECT_ISWEB'] === 'true';
 const BILLD_VARIANT =
   (process.env.BILLD_VARIANT as 'agent' | 'master') || 'master';
 const BILLD_WSS_URL =
-  process.env.BILLD_WSS_URL || 'wss://api.xx10086.com:8443';
+  process.env.BILLD_WSS_URL || '';
 const BILLD_AXIOS_URL =
-  process.env.BILLD_AXIOS_URL || 'https://api.xx10086.com:8443';
+  process.env.BILLD_AXIOS_URL || '';
 const BILLD_COTURN_URL = process.env.BILLD_COTURN_URL || '';
-const BILLD_AGENT_API_KEY =
-  process.env.BILLD_AGENT_API_KEY ||
-  'c6aed1f8702016f298c7bb3dda70269379a663e97f1d0c8e3e15a2825a6fa1a5';
+const BILLD_AGENT_API_KEY = process.env.BILLD_AGENT_API_KEY || '';
+if ((BILLD_VARIANT === 'agent' || BILLD_VARIANT === 'master') && BILLD_AGENT_API_KEY.length < 32) {
+  throw new Error('[vite] 缺少 BILLD_AGENT_API_KEY 环境变量（>=32字符）。构建前 set BILLD_AGENT_API_KEY=<openssl rand -hex 32>');
+}
+const BILLD_COTURN_USERNAME = process.env.BILLD_COTURN_USERNAME || '';
+const BILLD_COTURN_CREDENTIAL = process.env.BILLD_COTURN_CREDENTIAL || '';
 const BILLD_AGENT_VERSION = process.env.BILLD_AGENT_VERSION || pkg.version;
 console.log('[vite] BILLD_VARIANT =', BILLD_VARIANT);
 console.log('[vite] BILLD_WSS_URL =', BILLD_WSS_URL);
@@ -36,6 +39,8 @@ const BUILD_DEFINES = {
   __BILLD_WSS_URL__: JSON.stringify(BILLD_WSS_URL),
   __BILLD_AXIOS_URL__: JSON.stringify(BILLD_AXIOS_URL),
   __BILLD_COTURN_URL__: JSON.stringify(BILLD_COTURN_URL),
+  __BILLD_COTURN_USERNAME__: JSON.stringify(BILLD_COTURN_USERNAME),
+  __BILLD_COTURN_CREDENTIAL__: JSON.stringify(BILLD_COTURN_CREDENTIAL),
   __BILLD_AGENT_API_KEY__: JSON.stringify(BILLD_AGENT_API_KEY),
   __BILLD_AGENT_VERSION__: JSON.stringify(BILLD_AGENT_VERSION),
 };

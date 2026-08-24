@@ -1,6 +1,7 @@
 import { getRandomString } from 'billd-utils';
 
 import { COTURN_URL } from '@/constant';
+import { COTURN_USERNAME, COTURN_CREDENTIAL } from '@/build-config';
 import { LiveLineEnum, MediaTypeEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
@@ -544,8 +545,8 @@ export class WebRTCClass {
             // },
             {
               urls: getCoturnUrl() || COTURN_URL,
-              username: 'hss',
-              credential: '123456',
+              username: COTURN_USERNAME,
+              credential: COTURN_CREDENTIAL,
             },
           ];
       this.peerConnection = new RTCPeerConnection({
